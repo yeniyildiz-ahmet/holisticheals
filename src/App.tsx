@@ -41,8 +41,36 @@ import {
   Lock,
   Truck,
   HelpCircle,
-  Info
+  Info,
+  LayoutDashboard,
+  Users,
+  Package,
+  FileEdit,
+  Settings,
+  LogOut,
+  TrendingUp,
+  DollarSign,
+  MoreVertical,
+  Search,
+  Filter,
+  Download
 } from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -2870,7 +2898,7 @@ const Blog = ({ onPostClick }: { onPostClick: (p: BlogPost) => void }) => {
   );
 };
 
-const Footer = ({ onNavClick }: { onNavClick: (id: string) => void }) => {
+const Footer = ({ onNavClick, onAdminClick }: { onNavClick: (id: string) => void, onAdminClick: () => void }) => {
   return (
     <footer className="bg-brand-deep-green text-brand-cream pt-16 pb-12 px-6 relative overflow-hidden">
       <div className="max-w-7xl mx-auto grid md:grid-cols-12 gap-8 mb-12 relative z-10">
@@ -2937,6 +2965,12 @@ const Footer = ({ onNavClick }: { onNavClick: (id: string) => void }) => {
       <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-bold uppercase tracking-[0.3em] text-brand-cream/20">
         <p>© 2024 Holistic Heals. Tüm hakları saklıdır.</p>
         <div className="flex gap-8">
+          <button 
+            onClick={onAdminClick}
+            className="hover:text-brand-cream transition-colors cursor-pointer"
+          >
+            Yönetici Paneli
+          </button>
           <a href="#" className="hover:text-brand-cream transition-colors">Gizlilik</a>
           <a href="#" className="hover:text-brand-cream transition-colors">Kullanım Koşulları</a>
           <a href="#" className="hover:text-brand-cream transition-colors">Çerezler</a>
@@ -3026,7 +3060,440 @@ const WhatsAppButton = () => (
   </a>
 );
 
+// --- Admin Mock Data ---
+const ADMIN_STATS = [
+  { name: 'Pzt', sales: 4000, appointments: 24 },
+  { name: 'Sal', sales: 3000, appointments: 18 },
+  { name: 'Çar', sales: 2000, appointments: 22 },
+  { name: 'Per', sales: 2780, appointments: 30 },
+  { name: 'Cum', sales: 1890, appointments: 25 },
+  { name: 'Cmt', sales: 2390, appointments: 35 },
+  { name: 'Paz', sales: 3490, appointments: 40 },
+];
+
+const RECENT_APPOINTMENTS = [
+  { id: '1', name: 'Ayşe Yılmaz', service: 'Hacamat', date: '2024-03-15', time: '10:00', status: 'Onaylandı' },
+  { id: '2', name: 'Mehmet Kaya', service: 'Sülük Tedavisi', date: '2024-03-15', time: '11:30', status: 'Beklemede' },
+  { id: '3', name: 'Fatma Demir', service: 'Bioenerji', date: '2024-03-16', time: '09:00', status: 'Tamamlandı' },
+  { id: '4', name: 'Ali Yıldız', service: 'Hipnoz', date: '2024-03-16', time: '14:00', status: 'İptal Edildi' },
+];
+
+// --- Admin Components ---
+
+const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const sidebarItems = [
+    { id: 'overview', label: 'Genel Bakış', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'appointments', label: 'Randevular', icon: <Calendar className="w-5 h-5" /> },
+    { id: 'products', label: 'Ürünler', icon: <Package className="w-5 h-5" /> },
+    { id: 'blog', label: 'Blog Yazıları', icon: <FileEdit className="w-5 h-5" /> },
+    { id: 'users', label: 'Kullanıcılar', icon: <Users className="w-5 h-5" /> },
+    { id: 'settings', label: 'Ayarlar', icon: <Settings className="w-5 h-5" /> },
+  ];
+
+  return (
+    <div className="flex min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col">
+        <div className="p-6 flex items-center gap-3 border-b border-slate-100 dark:border-zinc-800">
+          <div className="bg-brand-forest p-2 rounded-lg">
+            <Flower2 className="w-6 h-6 text-white" />
+          </div>
+          <span className="font-serif font-bold text-brand-deep-green dark:text-white">Admin Panel</span>
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-1">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                activeTab === item.id
+                  ? "bg-brand-forest text-white shadow-lg shadow-brand-forest/20"
+                  : "text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-brand-forest"
+              )}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-slate-100 dark:border-zinc-800">
+          <button 
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all"
+          >
+            <LogOut className="w-5 h-5" />
+            Çıkış Yap
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        {/* Header */}
+        <header className="h-20 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-8 flex items-center justify-between sticky top-0 z-20">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">
+            {sidebarItems.find(i => i.id === activeTab)?.label}
+          </h1>
+          
+          <div className="flex items-center gap-6">
+            <div className="relative hidden md:block">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Ara..." 
+                className="pl-10 pr-4 py-2 bg-slate-100 dark:bg-zinc-800 border-none rounded-full text-sm focus:ring-2 focus:ring-brand-forest transition-all w-64"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-slate-800 dark:text-white">Admin User</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest">Süper Admin</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-brand-gold flex items-center justify-center text-brand-deep-green font-bold">
+                AU
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="p-8">
+          {activeTab === 'overview' && <AdminOverview />}
+          {activeTab === 'appointments' && <AdminAppointments />}
+          {activeTab === 'products' && <AdminProducts />}
+          {activeTab === 'blog' && <AdminBlog />}
+          {activeTab === 'settings' && <AdminSettings />}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+const AdminOverview = () => {
+  const stats = [
+    { label: 'Toplam Gelir', value: '₺45,230', change: '+12.5%', icon: <DollarSign className="w-6 h-6" />, color: 'bg-emerald-500' },
+    { label: 'Yeni Randevular', value: '124', change: '+18.2%', icon: <Calendar className="w-6 h-6" />, color: 'bg-blue-500' },
+    { label: 'Aktif Ürünler', value: '48', change: '+2', icon: <Package className="w-6 h-6" />, color: 'bg-amber-500' },
+    { label: 'Blog Okunma', value: '12.4K', change: '+5.4%', icon: <TrendingUp className="w-6 h-6" />, color: 'bg-purple-500' },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-zinc-800"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className={cn("p-3 rounded-2xl text-white", stat.color)}>
+                {stat.icon}
+              </div>
+              <span className="text-xs font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">
+                {stat.change}
+              </span>
+            </div>
+            <p className="text-slate-400 text-sm mb-1">{stat.label}</p>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{stat.value}</h3>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-8 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Performans Analizi</h3>
+              <p className="text-sm text-slate-400">Haftalık satış ve randevu verileri</p>
+            </div>
+            <select className="bg-slate-50 dark:bg-zinc-800 border-none rounded-xl text-xs font-bold px-4 py-2 focus:ring-0">
+              <option>Son 7 Gün</option>
+              <option>Son 30 Gün</option>
+            </select>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={ADMIN_STATS}>
+                <defs>
+                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1B4332" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#1B4332" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#94a3b8'}} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Area type="monotone" dataKey="sales" stroke="#1B4332" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="appointments" stroke="#D4AF37" strokeWidth={3} fillOpacity={0} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Son Randevular</h3>
+          <div className="space-y-6">
+            {RECENT_APPOINTMENTS.map((app) => (
+              <div key={app.id} className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 font-bold text-xs">
+                  {app.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{app.name}</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">{app.service}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold text-slate-800 dark:text-white">{app.time}</p>
+                  <p className="text-[10px] text-slate-400">{app.date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-8 py-3 rounded-xl border border-slate-100 dark:border-zinc-800 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all">
+            Tümünü Gör
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AdminAppointments = () => {
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800 overflow-hidden">
+      <div className="p-8 border-b border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Randevu Listesi</h3>
+          <p className="text-sm text-slate-400">Tüm randevu taleplerini buradan yönetebilirsiniz</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 dark:bg-zinc-800 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-slate-100 transition-all">
+            <Filter className="w-4 h-4" />
+            Filtrele
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-forest text-white text-xs font-bold hover:bg-brand-deep-green transition-all shadow-lg shadow-brand-forest/20">
+            <Plus className="w-4 h-4" />
+            Yeni Randevu
+          </button>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50 dark:bg-zinc-800/50">
+              <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">Danışan</th>
+              <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">Hizmet</th>
+              <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">Tarih / Saat</th>
+              <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">Durum</th>
+              <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+            {RECENT_APPOINTMENTS.map((app) => (
+              <tr key={app.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                <td className="px-8 py-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-brand-forest/10 flex items-center justify-center text-brand-forest font-bold text-[10px]">
+                      {app.name[0]}
+                    </div>
+                    <span className="text-sm font-bold text-slate-700 dark:text-zinc-200">{app.name}</span>
+                  </div>
+                </td>
+                <td className="px-8 py-5">
+                  <span className="text-xs text-slate-500 dark:text-zinc-400">{app.service}</span>
+                </td>
+                <td className="px-8 py-5">
+                  <div className="text-xs">
+                    <p className="font-bold text-slate-700 dark:text-zinc-200">{app.date}</p>
+                    <p className="text-slate-400">{app.time}</p>
+                  </div>
+                </td>
+                <td className="px-8 py-5">
+                  <span className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
+                    app.status === 'Onaylandı' && "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400",
+                    app.status === 'Beklemede' && "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
+                    app.status === 'Tamamlandı' && "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
+                    app.status === 'İptal Edildi' && "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
+                  )}>
+                    {app.status}
+                  </span>
+                </td>
+                <td className="px-8 py-5 text-right">
+                  <button className="p-2 text-slate-400 hover:text-brand-forest transition-colors">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="p-8 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+        <p className="text-xs text-slate-400">Toplam 24 randevudan 1-4 arası gösteriliyor</p>
+        <div className="flex items-center gap-2">
+          <button className="p-2 rounded-lg border border-slate-100 dark:border-zinc-800 text-slate-400 disabled:opacity-50" disabled>
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button className="p-2 rounded-lg border border-slate-100 dark:border-zinc-800 text-slate-400">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AdminProducts = () => {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Ürün Yönetimi</h3>
+          <p className="text-sm text-slate-400">Mağazadaki ürünleri ekleyin, düzenleyin veya kaldırın</p>
+        </div>
+        <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-forest text-white text-sm font-bold hover:bg-brand-deep-green transition-all shadow-lg shadow-brand-forest/20">
+          <Plus className="w-5 h-5" />
+          Yeni Ürün Ekle
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {PRODUCTS.map((product) => (
+          <div key={product.id} className="bg-white dark:bg-zinc-900 rounded-[32px] overflow-hidden border border-slate-100 dark:border-zinc-800 group">
+            <div className="aspect-square relative overflow-hidden">
+              <img src={product.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="p-2 bg-white/90 backdrop-blur rounded-lg text-slate-600 hover:text-brand-forest shadow-lg">
+                  <FileEdit className="w-4 h-4" />
+                </button>
+                <button className="p-2 bg-white/90 backdrop-blur rounded-lg text-red-500 hover:bg-red-50 shadow-lg">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest mb-1">{product.category}</p>
+              <h4 className="font-bold text-slate-800 dark:text-white mb-2">{product.name}</h4>
+              <div className="flex items-center justify-between">
+                <span className="text-brand-forest font-bold">{product.price}</span>
+                <span className="text-[10px] text-slate-400 bg-slate-50 dark:bg-zinc-800 px-2 py-1 rounded-lg">Stok: 12</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AdminBlog = () => {
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800 overflow-hidden">
+      <div className="p-8 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Blog Yazıları</h3>
+        <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-forest text-white text-sm font-bold hover:bg-brand-deep-green transition-all shadow-lg shadow-brand-forest/20">
+          <Plus className="w-5 h-5" />
+          Yeni Yazı Oluştur
+        </button>
+      </div>
+      <div className="p-8 space-y-6">
+        {BLOG_POSTS.map((post) => (
+          <div key={post.id} className="flex gap-6 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-all border border-transparent hover:border-slate-100 dark:hover:border-zinc-800">
+            <div className="w-32 h-24 rounded-xl overflow-hidden shrink-0">
+              <img src={post.image} className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-[10px] font-bold text-brand-gold uppercase tracking-widest">{post.date}</span>
+                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.author}</span>
+              </div>
+              <h4 className="font-bold text-slate-800 dark:text-white mb-2 truncate">{post.title}</h4>
+              <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">{post.excerpt}</p>
+            </div>
+            <div className="flex flex-col justify-center gap-2">
+              <button className="p-2 text-slate-400 hover:text-brand-forest transition-colors">
+                <FileEdit className="w-5 h-5" />
+              </button>
+              <button className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AdminSettings = () => {
+  return (
+    <div className="max-w-4xl space-y-8">
+      <div className="bg-white dark:bg-zinc-900 p-8 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-8">Genel Ayarlar</h3>
+        <div className="space-y-6">
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Site Başlığı</label>
+              <input type="text" defaultValue="Holistic Heals" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-brand-forest" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">İletişim E-postası</label>
+              <input type="email" defaultValue="info@holisticheals.net" className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-brand-forest" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Site Açıklaması</label>
+            <textarea rows={3} defaultValue="Beden, zihin ve ruh bütünlüğünü korumak için kadim şifa yöntemlerini modern yaşamla buluşturuyoruz." className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-brand-forest" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-zinc-900 p-8 rounded-[32px] shadow-sm border border-slate-100 dark:border-zinc-800">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-8">Bildirim Ayarları</h3>
+        <div className="space-y-4">
+          {[
+            { label: 'Yeni Randevu Bildirimleri', desc: 'Yeni bir randevu talebi geldiğinde e-posta gönder' },
+            { label: 'Stok Uyarıları', desc: 'Ürün stoğu 5\'in altına düştüğünde uyar' },
+            { label: 'Haftalık Rapor', desc: 'Her Pazartesi haftalık performans raporu gönder' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/50">
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-white">{item.label}</p>
+                <p className="text-xs text-slate-400">{item.desc}</p>
+              </div>
+              <div className="w-12 h-6 bg-brand-forest rounded-full relative cursor-pointer">
+                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-4">
+        <button className="px-8 py-3 rounded-xl border border-slate-200 dark:border-zinc-800 text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all">İptal</button>
+        <button className="px-8 py-3 rounded-xl bg-brand-forest text-white text-sm font-bold hover:bg-brand-deep-green transition-all shadow-lg shadow-brand-forest/20">Değişiklikleri Kaydet</button>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
+  const [isAdminView, setIsAdminView] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedTherapy, setSelectedTherapy] = useState<Therapy | null>(null);
   const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost | null>(null);
@@ -3091,6 +3558,18 @@ export default function App() {
   const removeFromCart = (id: string) => {
     setCart(prev => prev.filter(item => item.id !== id));
   };
+
+  useEffect(() => {
+    // Check for admin session or specific URL param for demo
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true') {
+      setIsAdminView(true);
+    }
+  }, []);
+
+  if (isAdminView) {
+    return <AdminDashboard onLogout={() => setIsAdminView(false)} />;
+  }
 
   return (
     <div className="min-h-screen selection:bg-brand-forest selection:text-white bg-brand-cream dark:bg-black transition-colors relative">
@@ -3179,7 +3658,7 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
-        <Footer onNavClick={scrollToSection} />
+        <Footer onNavClick={scrollToSection} onAdminClick={() => setIsAdminView(true)} />
       </div>
     </div>
   );
